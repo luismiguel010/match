@@ -28,29 +28,39 @@ func readCsvFile(filePath string) [][]string {
 	return records
 }
 
-func evaluator(a int, b int, valuesBuy [][]string, valuesSale [][]string) {
+func evaluator(a int, b int, valuesBuy [][]string, valuesSale [][]string, file *os.File) {
 	if b > a {
+		aInicial := a
+		bInicial := b
 		b = b - a
 		a = 0
 		valuesBuy[i][2] = strconv.Itoa(a)
 		valuesSale[j][2] = strconv.Itoa(b)
+		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", i, aInicial, j, bInicial, i, a, j, b)
 		i++
 	} else if b < a {
+		aInicial := a
+		bInicial := b
 		a = a - b
 		b = 0
 		valuesBuy[i][2] = strconv.Itoa(a)
 		valuesSale[j][2] = strconv.Itoa(b)
+		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", i, aInicial, j, bInicial, i, a, j, b)
 		j++
 	} else {
+		aInicial := a
+		bInicial := b
+		a = 0
+		b = 0
+		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", i, aInicial, j, bInicial, i, a, j, b)
 		valuesBuy[i][2] = strconv.Itoa(0)
 		valuesSale[j][2] = strconv.Itoa(0)
 		i++
 		j++
 	}
-
 }
 
-func match(valuesBuy [][]string, valuesSale [][]string) ([][]string, [][]string) {
+func match(valuesBuy [][]string, valuesSale [][]string, file *os.File) ([][]string, [][]string) {
 
 	if i == len(valuesBuy) || j == len(valuesBuy) {
 		return valuesBuy, valuesSale
@@ -59,9 +69,20 @@ func match(valuesBuy [][]string, valuesSale [][]string) ([][]string, [][]string)
 	a, _ := strconv.Atoi(valuesBuy[i][2])
 	b, _ := strconv.Atoi(valuesSale[j][2])
 
-	evaluator(a, b, valuesBuy, valuesSale)
+	evaluator(a, b, valuesBuy, valuesSale, file)
 
-	return match(valuesBuy, valuesSale)
+	return match(valuesBuy, valuesSale, file)
+}
+
+func generatorRegisterSales(sales string) {
+	file, err := os.Create("sales.cvs")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fmt.Fprintf(file, sales)
+
 }
 
 func generatorResult(nameFile string, values [][]string) {
@@ -79,9 +100,10 @@ func generatorResult(nameFile string, values [][]string) {
 
 func main() {
 	start := time.Now()
+	file, _ := os.Create("sales.cvs")
 	recordsBuy := readCsvFile(nameFileBuy)
 	recordsSale := readCsvFile(nameFileSale)
-	valuesBuy, valuesSale := match(recordsBuy, recordsSale)
+	valuesBuy, valuesSale := match(recordsBuy, recordsSale, file)
 	generatorResult("solicitudes_compra_result.cvs", valuesBuy)
 	generatorResult("solicitudes_venta_result.cvs", valuesSale)
 	fmt.Println(time.Since(start))

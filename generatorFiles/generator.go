@@ -20,15 +20,23 @@ func generateFile(nameFile string) {
 
 	max := 10000
 	min := 5000
+	var nameIdenficator string
 
-	for i := 1; i <= 5000; i++ {
+	for i := 1; i <= 10; i++ {
 		rand.Seed(time.Now().UnixNano())
 		cantidad := rand.Intn(max-min) + min
-		fmt.Fprintf(file, "o%d,energiaBasica,%d,%s\n", i, cantidad, time.Now().UTC())
+		if nameFile == nameFileBuy {
+			nameIdenficator = "C"
+		} else {
+			nameIdenficator = "V"
+		}
+		fmt.Fprintf(file, "%s%d,energiaBasica,%d,%s\n", nameIdenficator, i, cantidad, time.Now().UTC())
 	}
 }
 
 func main() {
+	start := time.Now()
 	generateFile(nameFileBuy)
 	generateFile(nameFileSale)
+	fmt.Println(time.Since(start))
 }

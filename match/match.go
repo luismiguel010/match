@@ -28,15 +28,7 @@ func readCsvFile(filePath string) [][]string {
 	return records
 }
 
-func match(valuesBuy [][]string, valuesSale [][]string) ([][]string, [][]string) {
-
-	if i == len(valuesBuy) || j == len(valuesBuy) {
-		return valuesBuy, valuesSale
-	}
-
-	a, _ := strconv.Atoi(valuesBuy[i][2])
-	b, _ := strconv.Atoi(valuesSale[j][2])
-
+func evaluator(a int, b int, valuesBuy [][]string, valuesSale [][]string) {
 	if b > a {
 		b = b - a
 		a = 0
@@ -55,6 +47,20 @@ func match(valuesBuy [][]string, valuesSale [][]string) ([][]string, [][]string)
 		i++
 		j++
 	}
+
+}
+
+func match(valuesBuy [][]string, valuesSale [][]string) ([][]string, [][]string) {
+
+	if i == len(valuesBuy) || j == len(valuesBuy) {
+		return valuesBuy, valuesSale
+	}
+
+	a, _ := strconv.Atoi(valuesBuy[i][2])
+	b, _ := strconv.Atoi(valuesSale[j][2])
+
+	evaluator(a, b, valuesBuy, valuesSale)
+
 	return match(valuesBuy, valuesSale)
 }
 

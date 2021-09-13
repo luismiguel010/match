@@ -55,16 +55,38 @@ func evaluator(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string,
 
 func match(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
 
-	if counterBuyRow == len(*valuesBuy) || counterSaleRow == len(*valuesBuy) {
-		return *valuesBuy, *valuesSale
+	for {
+
+		valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
+		valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
+		unitSale, _ := strconv.Atoi(valueUnitSale)
+		unitBuy, _ := strconv.Atoi(valueUnitBuy)
+		result := unitSale - unitBuy
+
+		switch {
+		case result > 0:
+			fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
+			counterBuyRow++
+		case result < 0:
+			fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterSaleRow++
+		default:
+			fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterBuyRow++
+			counterSaleRow++
+		}
+		if counterBuyRow == len(*valuesBuy) || counterSaleRow == len(*valuesBuy) {
+			break
+		}
 	}
 
-	valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
-	valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
-
-	evaluator(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
-
-	return match(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
+	return *valuesBuy, *valuesSale
 }
 
 func generatorResult(nameFile string, values [][]string) {

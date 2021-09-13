@@ -55,16 +55,16 @@ func evaluator(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string,
 
 func match(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
 
-RUTINA:
+	if counterBuyRow == len(*valuesBuy) || counterSaleRow == len(*valuesBuy) {
+		return *valuesBuy, *valuesSale
+	}
+
 	valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
 	valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
 
 	evaluator(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
 
-	if counterBuyRow == len(*valuesBuy) || counterSaleRow == len(*valuesBuy) {
-		return *valuesBuy, *valuesSale
-	}
-	goto RUTINA
+	return match(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
 }
 
 func generatorResult(nameFile string, values [][]string) {

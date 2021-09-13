@@ -61,10 +61,10 @@ RUTINA:
 
 	evaluator(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
 
-	goto RUTINA
 	if counterBuyRow == len(*valuesBuy) || counterSaleRow == len(*valuesBuy) {
 		return *valuesBuy, *valuesSale
 	}
+	goto RUTINA
 }
 
 func generatorResult(nameFile string, values [][]string) {

@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 )
 
 var nameFileBuy string = "./solicitudes_compra.cvs"
 var nameFileSale string = "./solicitudes_venta.cvs"
 
-func generateFile(nameFile string) {
+func generateFile(nameFile string, wg *sync.WaitGroup, lock *sync.Mutex) {
 	var amount int
+	defer wg.Done()
+	lock.Lock()
 	fmt.Println("Ingrese la cantidad a generar para" + nameFile)
 	fmt.Scanln(&amount)
+	lock.Unlock()
+	start := time.Now()
 	file, err := os.Create(nameFile)
 	if err != nil {
 		fmt.Println(err)
@@ -33,11 +38,17 @@ func generateFile(nameFile string) {
 		}
 		fmt.Fprintf(file, "%s%d,energiaBasica,%d,%s\n", nameIdenficator, i, cantidad, time.Now().UTC())
 	}
+	fmt.Println(time.Since(start))
 }
 
 func main() {
-	start := time.Now()
-	generateFile(nameFileBuy)
-	generateFile(nameFileSale)
-	fmt.Println(time.Since(start))
+
+	var lock sync.Mutex
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go generateFile(nameFileBuy, &wg, &lock)
+	wg.Add(1)
+	go generateFile(nameFileSale, &wg, &lock)
+	wg.Wait()
+
 }

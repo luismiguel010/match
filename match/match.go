@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"time"
@@ -12,7 +13,7 @@ var nameFileBuy string = "./solicitudes_compra.cvs"
 var nameFileSale string = "./solicitudes_venta.cvs"
 var counterBuyRow int = 0
 var counterSaleRow int = 0
-var COLUMNUNITSVALUE = 2
+var COLUMNUNITSVALUE int = 2
 
 func readCsvFile(filePath string) [][]string {
 	f, err := os.Open(filePath)
@@ -30,30 +31,20 @@ func readCsvFile(filePath string) [][]string {
 }
 
 func evaluator(valueUnitBuy int, valueUnitSale int, valuesBuy [][]string, valuesSale [][]string, file *os.File) {
-	if valueUnitSale > valueUnitBuy {
-		valueUnitBuyBefore := valueUnitBuy
-		valueUnitSaleBefore := valueUnitSale
-		valueUnitSale = valueUnitSale - valueUnitBuy
-		valueUnitBuy = 0
-		valuesBuy[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(valueUnitBuy)
-		valuesSale[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(valueUnitSale)
-		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuyBefore, counterSaleRow, valueUnitSaleBefore, counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale)
+	result := valueUnitSale - valueUnitBuy
+	switch {
+	case result > 0:
+		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, result)
+		valuesBuy[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+		valuesSale[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(result)
 		counterBuyRow++
-	} else if valueUnitSale < valueUnitBuy {
-		valueUnitBuyBefore := valueUnitBuy
-		valueUnitSaleBefore := valueUnitSale
-		valueUnitBuy = valueUnitBuy - valueUnitSale
-		valueUnitSale = 0
-		valuesBuy[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(valueUnitBuy)
-		valuesSale[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(valueUnitSale)
-		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuyBefore, counterSaleRow, valueUnitSaleBefore, counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale)
+	case result < 0:
+		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, int(math.Abs(float64(result))), counterSaleRow, 0)
+		valuesBuy[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(int(math.Abs(float64(result))))
+		valuesSale[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterSaleRow++
-	} else {
-		valueUnitBuyBefore := valueUnitBuy
-		valueUnitSaleBefore := valueUnitSale
-		valueUnitBuy = 0
-		valueUnitSale = 0
-		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuyBefore, counterSaleRow, valueUnitSaleBefore, counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale)
+	default:
+		fmt.Fprintf(file, "La C%d solicita comprar %d unidades, hace match con la V%d que tiene %d unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
 		valuesBuy[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		valuesSale[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterBuyRow++

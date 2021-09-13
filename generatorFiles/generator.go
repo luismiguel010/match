@@ -12,7 +12,7 @@ var nameFileSale string = "./solicitudes_venta.cvs"
 
 func generateFile(nameFile string) {
 	var amount int
-	fmt.Println("Ingrese la cantidad a generar")
+	fmt.Println("Ingrese la cantidad a generar para" + nameFile)
 	fmt.Scanln(&amount)
 	file, err := os.Create(nameFile)
 	if err != nil {

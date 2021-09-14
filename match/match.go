@@ -35,17 +35,17 @@ func evaluator(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string,
 	result := unitSale - unitBuy
 	switch {
 	case result > 0:
-		fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
+		registerResults(counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
 		counterBuyRow++
 	case result < 0:
-		fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
+		registerResults(counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterSaleRow++
 	default:
-		fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
+		registerResults(counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterBuyRow++
@@ -78,6 +78,10 @@ func generatorResult(nameFile string, values [][]string) {
 	for _, value := range values {
 		fmt.Fprintf(file, "%s\n", value)
 	}
+}
+
+func registerResults(a int, b string, c int, d string, e int, f int, g int, h int) {
+	fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", a, b, c, d, e, f, g, h)
 }
 
 func main() {

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"time"
@@ -13,6 +14,8 @@ var nameFileSale string = "./solicitudes_venta.cvs"
 var counterBuyRow int = 0
 var counterSaleRow int = 0
 var COLUMNUNITSVALUE int = 2
+var COLUMNCOSTVALUE int = 3
+var COLUMNTOLVALUE int = 4
 
 func readCsvFile(filePath string) [][]string {
 	f, err := os.Open(filePath)
@@ -29,39 +32,57 @@ func readCsvFile(filePath string) [][]string {
 	return records
 }
 
-func evaluator(valueUnitBuy *string, valueUnitSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
-	unitSale, _ := strconv.Atoi(*valueUnitSale)
+func evaluator(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, valueUnitSale *string, valueCostSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
+
 	unitBuy, _ := strconv.Atoi(*valueUnitBuy)
+	costBuy, _ := strconv.Atoi(*valueCostBuy)
+	tolBuy, _ := strconv.Atoi(*valueTolBuy)
+
+	unitSale, _ := strconv.Atoi(*valueUnitSale)
+	costSale, _ := strconv.Atoi(*valueCostSale)
 	result := unitSale - unitBuy
-	switch {
-	case result > 0:
-		registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
-		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
-		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
+
+	if math.Abs(float64(costBuy-costSale)) <= float64(tolBuy) {
+		switch {
+		case result > 0:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
+			counterBuyRow++
+			counterSaleRow = 0
+		case result < 0:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterSaleRow++
+		default:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterBuyRow++
+			counterSaleRow++
+		}
+	}
+	counterSaleRow++
+	if counterSaleRow == len(*valuesSale) {
 		counterBuyRow++
-	case result < 0:
-		registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
-		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
-		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
-		counterSaleRow++
-	default:
-		registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
-		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
-		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
-		counterBuyRow++
-		counterSaleRow++
+		counterSaleRow = 0
 	}
 }
 
-func match(valueUnitBuy *string, valueUnitSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
+func match(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, valueUnitSale *string, valueCostSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
 
 RUTINA:
 	*valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
+	*valueCostBuy = (*valuesBuy)[counterBuyRow][COLUMNCOSTVALUE]
+	*valueTolBuy = (*valuesBuy)[counterBuyRow][COLUMNTOLVALUE]
+
 	*valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
+	*valueCostSale = (*valuesBuy)[counterBuyRow][COLUMNCOSTVALUE]
 
-	evaluator(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
+	evaluator(valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale, file)
 
-	if counterBuyRow == len(*valuesBuy) || counterSaleRow == len(*valuesBuy) {
+	if counterBuyRow == len(*valuesBuy) {
 		return *valuesBuy, *valuesSale
 	}
 	goto RUTINA
@@ -70,7 +91,7 @@ RUTINA:
 func generatorResult(nameFile string, values [][]string) {
 	file, err := os.Create(nameFile)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return
 	}
 	defer file.Close()
@@ -90,9 +111,12 @@ func main() {
 	recordsBuy := readCsvFile(nameFileBuy)
 	recordsSale := readCsvFile(nameFileSale)
 	valueUnitBuy := recordsBuy[counterBuyRow][COLUMNUNITSVALUE]
+	fmt.Println("Hola aqui esta el tamaño", len(recordsBuy))
 	valueUnitSale := recordsSale[counterSaleRow][COLUMNUNITSVALUE]
-
-	valuesBuy, valuesSale := match(&valueUnitBuy, &valueUnitSale, &recordsBuy, &recordsSale, file)
+	valueCostBuy := recordsBuy[counterBuyRow][COLUMNCOSTVALUE]
+	valueTolBuy := recordsBuy[counterBuyRow][COLUMNTOLVALUE]
+	valueCostSale := recordsBuy[counterBuyRow][COLUMNCOSTVALUE]
+	valuesBuy, valuesSale := match(&valueUnitBuy, &valueCostBuy, &valueTolBuy, &valueUnitSale, &valueCostSale, &recordsBuy, &recordsSale, file)
 	generatorResult("solicitudes_compra_result.cvs", valuesBuy)
 	generatorResult("solicitudes_venta_result.cvs", valuesSale)
 	fmt.Println(time.Since(start))

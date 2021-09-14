@@ -29,23 +29,23 @@ func readCsvFile(filePath string) [][]string {
 	return records
 }
 
-func evaluator(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
-	unitSale, _ := strconv.Atoi(valueUnitSale)
-	unitBuy, _ := strconv.Atoi(valueUnitBuy)
+func evaluator(valueUnitBuy *string, valueUnitSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
+	unitSale, _ := strconv.Atoi(*valueUnitSale)
+	unitBuy, _ := strconv.Atoi(*valueUnitBuy)
 	result := unitSale - unitBuy
 	switch {
 	case result > 0:
-		registerResults(file, counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
+		registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
 		counterBuyRow++
 	case result < 0:
-		registerResults(file, counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
+		registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterSaleRow++
 	default:
-		registerResults(file, counterBuyRow, valueUnitBuy, counterSaleRow, valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
+		registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterBuyRow++
@@ -53,11 +53,11 @@ func evaluator(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string,
 	}
 }
 
-func match(valueUnitBuy string, valueUnitSale string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
+func match(valueUnitBuy *string, valueUnitSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
 
 RUTINA:
-	valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
-	valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
+	*valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
+	*valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
 
 	evaluator(valueUnitBuy, valueUnitSale, valuesBuy, valuesSale, file)
 
@@ -92,7 +92,7 @@ func main() {
 	valueUnitBuy := recordsBuy[counterBuyRow][COLUMNUNITSVALUE]
 	valueUnitSale := recordsSale[counterSaleRow][COLUMNUNITSVALUE]
 
-	valuesBuy, valuesSale := match(valueUnitBuy, valueUnitSale, &recordsBuy, &recordsSale, file)
+	valuesBuy, valuesSale := match(&valueUnitBuy, &valueUnitSale, &recordsBuy, &recordsSale, file)
 	generatorResult("solicitudes_compra_result.cvs", valuesBuy)
 	generatorResult("solicitudes_venta_result.cvs", valuesSale)
 	fmt.Println(time.Since(start))

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 )
 
 var nameFileBuy string = "./solicitudes_compra.cvs"
@@ -116,7 +115,6 @@ func cases(result *int, valueUnitBuy *int, valueCostBuy *int, valueTolBuy *int, 
 
 /*main funcion principal que ejecuta el programa*/
 func TotalMatch() {
-	start := time.Now()
 	file, _ := os.Create("sales.cvs")
 	recordsBuy := readCsvFile(nameFileBuy)
 	recordsSale := readCsvFile(nameFileSale)
@@ -124,7 +122,6 @@ func TotalMatch() {
 	valuesBuy, valuesSale := match(&valueUnitBuy, &valueCostBuy, &valueTolBuy, &valueUnitSale, &valueCostSale, &recordsBuy, &recordsSale, file)
 	generatorResult("solicitudes_compra_result.cvs", valuesBuy)
 	generatorResult("solicitudes_venta_result.cvs", valuesSale)
-	fmt.Println(time.Since(start))
 	counterBuyRow = 0
 	counterSaleRow = 0
 }

@@ -1,7 +1,0 @@
-goos: linux
-goarch: amd64
-pkg: github.com/luismiguel010/match
-cpu: 11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz
-BenchmarkMatch-8   	       3	 386786967 ns/op	 4380026 B/op	  162357 allocs/op
-PASS
-ok  	github.com/luismiguel010/match	2.318s

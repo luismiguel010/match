@@ -63,11 +63,11 @@ func evaluator(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, 
 			counterSaleRow++
 		}
 	}
-	counterSaleRow++
-	if counterSaleRow == len(*valuesSale) {
+	if counterSaleRow == len(*valuesSale)-1 {
 		counterBuyRow++
 		counterSaleRow = 0
 	}
+	counterSaleRow++
 }
 
 func match(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, valueUnitSale *string, valueCostSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
@@ -78,7 +78,7 @@ RUTINA:
 	*valueTolBuy = (*valuesBuy)[counterBuyRow][COLUMNTOLVALUE]
 
 	*valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
-	*valueCostSale = (*valuesBuy)[counterBuyRow][COLUMNCOSTVALUE]
+	*valueCostSale = (*valuesBuy)[counterSaleRow][COLUMNCOSTVALUE]
 
 	evaluator(valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale, file)
 

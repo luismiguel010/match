@@ -41,33 +41,33 @@ func evaluator(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, 
 	unitSale, _ := strconv.Atoi(*valueUnitSale)
 	costSale, _ := strconv.Atoi(*valueCostSale)
 	result := unitSale - unitBuy
-
-	if math.Abs(float64(costBuy-costSale)) <= float64(tolBuy) {
+	if math.Abs(float64(costBuy-costSale)) <= float64(tolBuy) && int(math.Abs(float64(result))) != unitBuy {
 		switch {
 		case result > 0:
-			//registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
+			registerResults(file, counterBuyRow, *valueUnitBuy, costBuy, tolBuy, counterSaleRow, *valueUnitSale, costSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
 			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
 			counterBuyRow++
 			counterSaleRow = 0
 		case result < 0:
-			//registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
+			registerResults(file, counterBuyRow, *valueUnitBuy, costBuy, tolBuy, counterSaleRow, *valueUnitSale, costSale, counterBuyRow, unitBuy-unitSale, counterSaleRow, 0)
 			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
 			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 			counterSaleRow++
 		default:
-			//registerResults(file, counterBuyRow, *valueUnitBuy, counterSaleRow, *valueUnitSale, counterBuyRow, 0, counterSaleRow, 0)
+			registerResults(file, counterBuyRow, *valueUnitBuy, costBuy, tolBuy, counterSaleRow, *valueUnitSale, costSale, counterBuyRow, 0, counterSaleRow, 0)
 			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 			counterBuyRow++
 			counterSaleRow++
 		}
+	} else {
+		counterSaleRow++
 	}
 	if counterSaleRow == len(*valuesSale)-1 {
 		counterBuyRow++
 		counterSaleRow = 0
 	}
-	counterSaleRow++
 }
 
 func match(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, valueUnitSale *string, valueCostSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
@@ -78,7 +78,7 @@ RUTINA:
 	*valueTolBuy = (*valuesBuy)[counterBuyRow][COLUMNTOLVALUE]
 
 	*valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
-	*valueCostSale = (*valuesBuy)[counterSaleRow][COLUMNCOSTVALUE]
+	*valueCostSale = (*valuesSale)[counterSaleRow][COLUMNCOSTVALUE]
 
 	evaluator(valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale, file)
 
@@ -101,8 +101,8 @@ func generatorResult(nameFile string, values [][]string) {
 	}
 }
 
-func registerResults(file *os.File, a int, b string, c int, d string, e int, f int, g int, h int) {
-	fmt.Fprintf(file, "La C%d solicita comprar %s unidades, hace match con la V%d que tiene %s unidades disponibles; quedando C%d con %d unidades solicitadas y V%d con %d unidades disponibles.\n", a, b, c, d, e, f, g, h)
+func registerResults(file *os.File, a int, b string, c int, d int, e int, f string, g int, h int, i int, j int, k int) {
+	fmt.Fprintf(file, "La C%d solicita comprar %s unidades a un precio de %d con tolerancia %d e hizo match con V%d que tenía %s unidades a un precio de %d; quedando C%d con %d unidades y V%d con %d unidades.\n", a, b, c, d, e, f, g, h, i, j, k)
 }
 
 func main() {

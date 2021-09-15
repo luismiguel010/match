@@ -1,7 +1,9 @@
 package main
 
-import "github.com/luismiguel010/match/match"
+import (
+	"github.com/luismiguel010/match/handlers"
+)
 
 func main() {
-	match.TotalMatch()
+	handlers.Handler()
 }

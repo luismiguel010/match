@@ -41,7 +41,7 @@ func evaluator(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, 
 	unitSale, _ := strconv.Atoi(*valueUnitSale)
 	costSale, _ := strconv.Atoi(*valueCostSale)
 	result := unitSale - unitBuy
-	if math.Abs(float64(costBuy-costSale)) <= float64(tolBuy) && int(math.Abs(float64(result))) != unitBuy {
+	if math.Abs(float64(costBuy-costSale)) <= float64(tolBuy) && unitSale != 0 {
 		switch {
 		case result > 0:
 			registerResults(file, counterBuyRow, *valueUnitBuy, costBuy, tolBuy, counterSaleRow, *valueUnitSale, costSale, counterBuyRow, 0, counterSaleRow, unitSale-unitBuy)
@@ -82,7 +82,7 @@ RUTINA:
 
 	evaluator(valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale, file)
 
-	if counterBuyRow == len(*valuesBuy) {
+	if counterBuyRow == len(*valuesBuy)-1 {
 		return *valuesBuy, *valuesSale
 	}
 	goto RUTINA

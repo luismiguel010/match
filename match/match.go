@@ -1,4 +1,4 @@
-package main
+package match
 
 import (
 	"encoding/csv"
@@ -6,7 +6,6 @@ import (
 	"math"
 	"os"
 	"strconv"
-	"time"
 )
 
 var nameFileBuy string = "./solicitudes_compra.cvs"
@@ -105,13 +104,11 @@ func registerResults(file *os.File, a int, b string, c int, d int, e int, f stri
 	fmt.Fprintf(file, "La C%d solicita comprar %s unidades a un precio de %d con tolerancia %d e hizo match con V%d que tenía %s unidades a un precio de %d; quedando C%d con %d unidades y V%d con %d unidades.\n", a, b, c, d, e, f, g, h, i, j, k)
 }
 
-func main() {
-	start := time.Now()
+func TotalMatch() {
 	file, _ := os.Create("sales.cvs")
 	recordsBuy := readCsvFile(nameFileBuy)
 	recordsSale := readCsvFile(nameFileSale)
 	valueUnitBuy := recordsBuy[counterBuyRow][COLUMNUNITSVALUE]
-	fmt.Println("Hola aqui esta el tamaño", len(recordsBuy))
 	valueUnitSale := recordsSale[counterSaleRow][COLUMNUNITSVALUE]
 	valueCostBuy := recordsBuy[counterBuyRow][COLUMNCOSTVALUE]
 	valueTolBuy := recordsBuy[counterBuyRow][COLUMNTOLVALUE]
@@ -119,5 +116,6 @@ func main() {
 	valuesBuy, valuesSale := match(&valueUnitBuy, &valueCostBuy, &valueTolBuy, &valueUnitSale, &valueCostSale, &recordsBuy, &recordsSale, file)
 	generatorResult("solicitudes_compra_result.cvs", valuesBuy)
 	generatorResult("solicitudes_venta_result.cvs", valuesSale)
-	fmt.Println(time.Since(start))
+	counterBuyRow = 0
+	counterSaleRow = 0
 }

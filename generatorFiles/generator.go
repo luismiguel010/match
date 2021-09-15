@@ -12,17 +12,9 @@ var nameFileBuy string = "./solicitudes_compra.cvs"
 var nameFileSale string = "./solicitudes_venta.cvs"
 
 func generateFile(nameFile string, amount int, wg *sync.WaitGroup, lock *sync.Mutex) {
+	var maxValues, minValues, maxCost, minCost, maxTol, minTol int = 10000, 5000, 20, 10, 3, 0
 	var nameIdenficator string
-	var maxValues int = 10000
-	var minValues int = 5000
-	var maxCost int = 20
-	var minCost int = 10
-	var maxTol int = 3
-	var minTol int = 0
-	var value int
-	var cost int
-	var tol int
-
+	var value, cost, tol int
 	defer wg.Done()
 	file, err := os.Create(nameFile)
 	if err != nil {
@@ -46,21 +38,16 @@ func generateFile(nameFile string, amount int, wg *sync.WaitGroup, lock *sync.Mu
 }
 
 func main() {
-
 	var lock sync.Mutex
 	var wg sync.WaitGroup
-
 	var amount int
 	fmt.Println("Ingrese la cantidad a generar de los dos archivos")
 	fmt.Scanln(&amount)
-
 	if amount != 0 {
 		wg.Add(1)
 		go generateFile(nameFileBuy, amount, &wg, &lock)
 		wg.Add(1)
 		go generateFile(nameFileSale, amount, &wg, &lock)
 	}
-
 	wg.Wait()
-
 }

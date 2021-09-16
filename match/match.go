@@ -36,8 +36,47 @@ para que una compra haga match con una venta se debe respetar el rango que rige 
 func match(valueUnitBuy *string, valueCostBuy *string, valueTolBuy *string, valueUnitSale *string, valueCostSale *string, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) ([][]string, [][]string) {
 
 RUTINA:
-	assingValues(valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale)
-	evaluator(castValues(valueUnitBuy), castValues(valueCostBuy), castValues(valueTolBuy), castValues(valueUnitSale), castValues(valueCostSale), valuesBuy, valuesSale, file)
+	*valueUnitBuy = (*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE]
+	*valueCostBuy = (*valuesBuy)[counterBuyRow][COLUMNCOSTVALUE]
+	*valueTolBuy = (*valuesBuy)[counterBuyRow][COLUMNTOLVALUE]
+	*valueUnitSale = (*valuesSale)[counterSaleRow][COLUMNUNITSVALUE]
+	*valueCostSale = (*valuesSale)[counterSaleRow][COLUMNCOSTVALUE]
+
+	unitBuy, _ := strconv.Atoi(*valueUnitBuy)
+	costBuy, _ := strconv.Atoi(*valueCostBuy)
+	tolBuy, _ := strconv.Atoi(*valueTolBuy)
+	unitSale, _ := strconv.Atoi(*valueUnitSale)
+	costSale, _ := strconv.Atoi(*valueCostSale)
+
+	//evaluator(castValues(valueUnitBuy), castValues(valueCostBuy), castValues(valueTolBuy), castValues(valueUnitSale), castValues(valueCostSale), valuesBuy, valuesSale, file)
+	result := unitSale - unitBuy
+	if math.Abs(float64(costBuy-costSale)) <= float64(tolBuy) && unitSale != 0 {
+		switch {
+		case result > 0:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, *valueUnitSale-*valueUnitBuy)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(unitSale - unitBuy)
+			counterBuyRow++
+			counterSaleRow = 0
+		case result < 0:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, *valueUnitBuy-*valueUnitSale, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(unitBuy - unitSale)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterSaleRow++
+		default:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterBuyRow++
+			counterSaleRow++
+		}
+	} else {
+		counterSaleRow++
+	}
+	if counterSaleRow == len(*valuesSale)-1 {
+		counterBuyRow++
+		counterSaleRow = 0
+	}
 	if counterBuyRow == len(*valuesBuy)-1 {
 		return *valuesBuy, *valuesSale
 	}
@@ -81,7 +120,25 @@ func registerResults(file *os.File, a int, b int, c int, d int, e int, f int, g 
 func evaluator(valueUnitBuy *int, valueCostBuy *int, valueTolBuy *int, valueUnitSale *int, valueCostSale *int, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
 	result := *valueUnitSale - *valueUnitBuy
 	if math.Abs(float64(*valueCostBuy-*valueCostSale)) <= float64(*valueTolBuy) && *valueUnitSale != 0 {
-		cases(&result, valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale, file)
+		switch {
+		case result > 0:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, *valueUnitSale-*valueUnitBuy)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(*valueUnitSale - *valueUnitBuy)
+			counterBuyRow++
+			counterSaleRow = 0
+		case result < 0:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, *valueUnitBuy-*valueUnitSale, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(*valueUnitBuy - *valueUnitSale)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterSaleRow++
+		default:
+			//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, 0)
+			(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
+			counterBuyRow++
+			counterSaleRow++
+		}
 	} else {
 		counterSaleRow++
 	}
@@ -95,18 +152,18 @@ func evaluator(valueUnitBuy *int, valueCostBuy *int, valueTolBuy *int, valueUnit
 func cases(result *int, valueUnitBuy *int, valueCostBuy *int, valueTolBuy *int, valueUnitSale *int, valueCostSale *int, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
 	switch {
 	case *result > 0:
-		registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, *valueUnitSale-*valueUnitBuy)
+		//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, *valueUnitSale-*valueUnitBuy)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(*valueUnitSale - *valueUnitBuy)
 		counterBuyRow++
 		counterSaleRow = 0
 	case *result < 0:
-		registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, *valueUnitBuy-*valueUnitSale, counterSaleRow, 0)
+		//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, *valueUnitBuy-*valueUnitSale, counterSaleRow, 0)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(*valueUnitBuy - *valueUnitSale)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterSaleRow++
 	default:
-		registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, 0)
+		//registerResults(file, counterBuyRow, *valueUnitBuy, *valueCostBuy, *valueTolBuy, counterSaleRow, *valueUnitSale, *valueCostSale, counterBuyRow, 0, counterSaleRow, 0)
 		(*valuesBuy)[counterBuyRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		(*valuesSale)[counterSaleRow][COLUMNUNITSVALUE] = strconv.Itoa(0)
 		counterBuyRow++

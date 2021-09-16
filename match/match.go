@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"time"
@@ -80,7 +81,7 @@ func registerResults(file *os.File, a int, b int, c int, d int, e int, f int, g 
 
 func evaluator(valueUnitBuy *int, valueCostBuy *int, valueTolBuy *int, valueUnitSale *int, valueCostSale *int, valuesBuy *[][]string, valuesSale *[][]string, file *os.File) {
 	result := *valueUnitSale - *valueUnitBuy
-	if ((*valueCostBuy - *valueCostSale) <= *valueTolBuy) && (*valueUnitSale != 0) {
+	if math.Abs(float64(*valueCostBuy-*valueCostSale)) <= float64(*valueTolBuy) && *valueUnitSale != 0 {
 		cases(&result, valueUnitBuy, valueCostBuy, valueTolBuy, valueUnitSale, valueCostSale, valuesBuy, valuesSale, file)
 	} else {
 		counterSaleRow++

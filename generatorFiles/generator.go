@@ -1,4 +1,4 @@
-package main
+package generatorfiles
 
 import (
 	"fmt"
@@ -11,44 +11,40 @@ import (
 var nameFileBuy string = "./solicitudes_compra.cvs"
 var nameFileSale string = "./solicitudes_venta.cvs"
 
-func generateFile(nameFile string, wg *sync.WaitGroup, lock *sync.Mutex) {
-	var amount int
+func createFiles(nameFile string, amount int, wg *sync.WaitGroup, lock *sync.Mutex) {
+	var maxValues, minValues, maxCost, minCost, maxTol, minTol int = 10000, 5000, 20, 10, 3, 0
+	var nameIdenficator string
+	var value, cost, tol int
 	defer wg.Done()
-	lock.Lock()
-	fmt.Println("Ingrese la cantidad a generar para" + nameFile)
-	fmt.Scanln(&amount)
-	lock.Unlock()
-	start := time.Now()
 	file, err := os.Create(nameFile)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer file.Close()
-	max := 10000
-	min := 5000
-	var nameIdenficator string
 	for i := 1; i <= amount; i++ {
 		rand.Seed(time.Now().UnixNano())
-		cantidad := rand.Intn(max-min) + min
+		value = rand.Intn(maxValues-minValues) + minValues
+		cost = rand.Intn(maxCost-minCost) + minCost
+		tol = rand.Intn(maxTol-minTol) + minTol
 		if nameFile == nameFileBuy {
 			nameIdenficator = "C"
+			fmt.Fprintf(file, "%s%d,energiaBasica,%d,%d,%d,%s\n", nameIdenficator, i, value, cost, tol, time.Now().UTC())
 		} else {
 			nameIdenficator = "V"
+			fmt.Fprintf(file, "%s%d,energiaBasica,%d,%d,%s\n", nameIdenficator, i, value, cost, time.Now().UTC())
 		}
-		fmt.Fprintf(file, "%s%d,energiaBasica,%d,%s\n", nameIdenficator, i, cantidad, time.Now().UTC())
 	}
-	fmt.Println(time.Since(start))
 }
 
-func main() {
-
+func GeneratorFiles(amount int) {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go generateFile(nameFileBuy, &wg, &lock)
-	wg.Add(1)
-	go generateFile(nameFileSale, &wg, &lock)
+	if amount != 0 {
+		wg.Add(1)
+		go createFiles(nameFileBuy, amount, &wg, &lock)
+		wg.Add(1)
+		go createFiles(nameFileSale, amount, &wg, &lock)
+	}
 	wg.Wait()
-
 }
